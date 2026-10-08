@@ -5,14 +5,22 @@ const { body, validationResult } = require('express-validator');
 const ctrl = require('../controllers/hotelController');
 
 const validate = [
-  body('title').trim().notEmpty().withMessage('Title required'),
-  body('description').trim().notEmpty(),
-  body('latitude').isFloat({ min: -90, max: 90 }),
-  body('longitude').isFloat({ min: -180, max: 180 }),
-  body('price').isFloat({ min: 1 }),
+  body('title').trim().notEmpty().withMessage('Title is required'),
+  body('description').trim().notEmpty().withMessage('Description is required'),
+  body('latitude')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Valid latitude required (-90 to 90)'),
+  body('longitude')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Valid longitude required (-180 to 180)'),
+  body('price')
+    .isFloat({ min: 1 })
+    .withMessage('Valid price required (min 1)'),
   (req, res, next) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     next();
   },
 ];
