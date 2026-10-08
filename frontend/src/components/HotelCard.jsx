@@ -17,10 +17,10 @@ export default function HotelCard({ hotel, onDelete }) {
           View Details
         </Link>
         <Link to={`/edit/${hotel.id}`} className="edit-btn">
-          ✏️
+          Edit
         </Link>
         <button onClick={() => onDelete(hotel.id)} className="delete-btn">
-          🗑️
+          Delete
         </button>
       </div>
     </div>
