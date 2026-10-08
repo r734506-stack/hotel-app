@@ -1,6 +1,31 @@
 const db = require('../config/db');
-const fs = require('fs');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Helper: Cloudinary la irundhu image delete panna
+const deleteFromCloudinary = async (imageUrl) => {
+  try {
+    if (!imageUrl || !imageUrl.includes('cloudinary')) return;
+
+    // Extract public_id from URL
+    // URL format: https://res.cloudinary.com/cloudname/image/upload/v123/folder/filename.jpg
+    const parts = imageUrl.split('/');
+    const filename = parts[parts.length - 1].split('.')[0];
+    const folder = parts[parts.length - 2];
+    const publicId = `${folder}/${filename}`;
+
+    await cloudinary.uploader.destroy(publicId);
+    console.log('✅ Deleted from Cloudinary:', publicId);
+  } catch (err) {
+    console.error('⚠️ Cloudinary delete failed:', err.message);
+  }
+};
 
 // ========== CREATE ==========
 exports.createHotel = async (req, res) => {
@@ -11,7 +36,8 @@ exports.createHotel = async (req, res) => {
       return res.status(400).json({ message: 'Image is required' });
     }
 
-    const image = `/uploads/${req.file.filename}`;
+    // Cloudinary URL (req.file.path la irukkum)
+    const image = req.file.path;
 
     const result = await db.query(
       `INSERT INTO hotels 
@@ -41,10 +67,10 @@ exports.updateHotel = async (req, res) => {
 
     let image = check.rows[0].image;
 
+    // New image upload aana, old image ah Cloudinary la irundhu delete pannunga
     if (req.file) {
-      const oldPath = path.join(__dirname, '..', check.rows[0].image);
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      image = `/uploads/${req.file.filename}`;
+      await deleteFromCloudinary(image);
+      image = req.file.path;
     }
 
     const result = await db.query(
@@ -74,8 +100,8 @@ exports.deleteHotel = async (req, res) => {
       return res.status(404).json({ message: 'Hotel not found' });
     }
 
-    const imgPath = path.join(__dirname, '..', check.rows[0].image);
-    if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+    // Cloudinary la irundhu image delete pannunga
+    await deleteFromCloudinary(check.rows[0].image);
 
     await db.query('DELETE FROM hotels WHERE id = $1', [id]);
 
@@ -86,7 +112,7 @@ exports.deleteHotel = async (req, res) => {
   }
 };
 
-// ========== LIST (with search + filter + pagination) ==========
+// ========== LIST ==========
 exports.getHotels = async (req, res) => {
   try {
     const title = req.query.title || '';

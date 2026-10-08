@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
 
 export default function HotelCard({ hotel, onDelete }) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
   return (
     <div className="hotel-card">
       <div className="card-image-wrapper">
-        <img src={`${API_URL}${hotel.image}`} alt={hotel.title} loading="lazy" />
+        <img src={hotel.image} alt={hotel.title} loading="lazy" />
         <span className="rating-badge">⭐ 4.5</span>
       </div>
       <h3>{hotel.title}</h3>
