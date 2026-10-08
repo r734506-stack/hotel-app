@@ -1,16 +1,27 @@
 import { Link } from 'react-router-dom';
 
 export default function HotelCard({ hotel, onDelete }) {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   return (
     <div className="hotel-card">
-      <img src={`http://localhost:5000${hotel.image}`} alt={hotel.title} />
+      <div className="card-image-wrapper">
+        <img src={`${API_URL}${hotel.image}`} alt={hotel.title} loading="lazy" />
+        <span className="rating-badge">⭐ 4.5</span>
+      </div>
       <h3>{hotel.title}</h3>
-      <p className="price">₹ {hotel.price}</p>
+      <p className="price">{hotel.price}</p>
       <p className="desc">{hotel.description.slice(0, 80)}...</p>
       <div className="actions">
-        <Link to={`/hotel/${hotel.id}`}>View</Link>
-        <Link to={`/edit/${hotel.id}`}>Edit</Link>
-        <button onClick={() => onDelete(hotel.id)}>Delete</button>
+        <Link to={`/hotel/${hotel.id}`} className="view-btn">
+          View Details
+        </Link>
+        <Link to={`/edit/${hotel.id}`} className="edit-btn">
+          ✏️
+        </Link>
+        <button onClick={() => onDelete(hotel.id)} className="delete-btn">
+          🗑️
+        </button>
       </div>
     </div>
   );

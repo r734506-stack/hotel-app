@@ -22,33 +22,66 @@ export default function HotelList() {
     dispatch(fetchHotels(params));
   };
 
-  useEffect(() => { load(1); }, [title, minPrice, maxPrice]);
+  useEffect(() => {
+    load(1);
+    // eslint-disable-next-line
+  }, [title, minPrice, maxPrice]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this hotel?')) return;
-    await dispatch(deleteHotel(id));
-    toast.success('Hotel deleted successfully');
-    load(page);
+    const res = await dispatch(deleteHotel(id));
+    if (res.meta.requestStatus === 'fulfilled') {
+      toast.success('Hotel deleted successfully');
+      load(page);
+    } else {
+      toast.error(res.payload || 'Delete failed');
+    }
   };
 
   return (
     <>
       <Helmet>
         <title>Hotels List | HotelApp</title>
-        <meta name="description" content="Browse hotels with search and filters" />
+        <meta
+          name="description"
+          content="Browse the best hotels with search, filter, and map view."
+        />
       </Helmet>
 
       <div className="navbar">
-        <div className="brand">🏨 HotelApp</div>
+        <div className="brand">🏨 Hotel Booking App</div>
         <div className="nav-right">
-          <Link to="/add" className="add-btn">+ Add Hotel</Link>
+          <Link to="/add" className="add-btn">
+            + Add Hotel
+          </Link>
         </div>
       </div>
 
+      <div className="hero">
+        <h1>
+          Book Your <span> Next Stay</span>
+        </h1>
+        <p>Discover handpicked hotels across Hyderabad with real-time availability</p>
+      </div>
+
       <div className="filters">
-        <input placeholder="Search by title" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <input placeholder="Min price" type="number" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
-        <input placeholder="Max price" type="number" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
+        <input
+          placeholder="🔍 Search by title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          placeholder="Min price (₹)"
+          type="number"
+          value={minPrice}
+          onChange={(e) => setMinPrice(e.target.value)}
+        />
+        <input
+          placeholder="Max price (₹)"
+          type="number"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+        />
       </div>
 
       {loading ? (
@@ -74,6 +107,12 @@ export default function HotelList() {
       )}
 
       <Pagination page={page} total={total} limit={limit} onChange={load} />
+
+      <footer className="footer">
+        <p>
+          🏨 <strong>HotelApp</strong> © 2026 — Built with React + Node.js + PostgreSQL
+        </p>
+      </footer>
     </>
   );
 }
