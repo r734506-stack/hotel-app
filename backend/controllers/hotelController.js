@@ -27,7 +27,6 @@ exports.createHotel = async (req, res) => {
   try {
     console.log('📥 Create request received');
     
-    // ✅ Object ah direct ah log pannunga, string concat pannaadheenga
     console.log('File object:', JSON.stringify(req.file));
 
     const { title, description, latitude, longitude, price } = req.body;
@@ -37,12 +36,10 @@ exports.createHotel = async (req, res) => {
       return res.status(400).json({ message: 'Image is required' });
     }
 
-    // ✅ Mukkiyamana fix: Cloudinary URL ah correct ah edukkanum
     const image = req.file.path || req.file.secure_url || req.file.url;
     
     console.log('✅ Extracted Cloudinary URL:', image);
 
-    // Database query
     const result = await db.query(
       `INSERT INTO hotels 
        (image, title, description, latitude, longitude, price) 

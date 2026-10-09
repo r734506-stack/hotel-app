@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// ✅ Environment variable use pannunga
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/hotels';
 
 export const fetchHotels = createAsyncThunk('hotels/fetch', async (params, { rejectWithValue }) => {
@@ -26,7 +25,6 @@ export const createHotel = createAsyncThunk(
   'hotels/create',
   async (formData, { rejectWithValue }) => {
     try {
-      // ✅ Headers illa! Axios automatic ah boundary set pannum
       const { data } = await axios.post(API, formData, {
         timeout: 120000,
       });
