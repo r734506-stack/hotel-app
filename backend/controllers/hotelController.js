@@ -22,12 +22,11 @@ const deleteFromCloudinary = async (imageUrl) => {
   }
 };
 
-// CREATE
 exports.createHotel = async (req, res) => {
   try {
     console.log('📥 Create request received');
-    
-    console.log('File object:', JSON.stringify(req.file));
+    console.log('File:', JSON.stringify(req.file, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
 
     const { title, description, latitude, longitude, price } = req.body;
 
@@ -37,8 +36,12 @@ exports.createHotel = async (req, res) => {
     }
 
     const image = req.file.path || req.file.secure_url || req.file.url;
-    
-    console.log('✅ Extracted Cloudinary URL:', image);
+    console.log('✅ Image URL:', image);
+
+    if (!image || image === 'undefined') {
+      console.log('❌ Image URL is undefined!');
+      return res.status(400).json({ message: 'Image URL missing' });
+    }
 
     const result = await db.query(
       `INSERT INTO hotels 
@@ -48,15 +51,15 @@ exports.createHotel = async (req, res) => {
       [image, title, description, latitude, longitude, price]
     );
 
-    console.log('✅ Inserted hotel ID:', result.rows[0].id);
+    console.log('✅ Inserted ID:', result.rows[0].id);
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error('❌ Create error:', err.message);
+    console.log('❌ Create error:', err.message);
+    console.log('❌ Full error:', JSON.stringify(err, null, 2));
     res.status(500).json({ message: err.message });
   }
 };
 
-// UPDATE
 exports.updateHotel = async (req, res) => {
   try {
     const { id } = req.params;
