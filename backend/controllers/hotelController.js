@@ -13,8 +13,6 @@ const deleteFromCloudinary = async (imageUrl) => {
   try {
     if (!imageUrl || !imageUrl.includes('cloudinary')) return;
 
-    // Extract public_id from URL
-    // URL format: https://res.cloudinary.com/cloudname/image/upload/v123/folder/filename.jpg
     const parts = imageUrl.split('/');
     const filename = parts[parts.length - 1].split('.')[0];
     const folder = parts[parts.length - 2];
@@ -30,14 +28,19 @@ const deleteFromCloudinary = async (imageUrl) => {
 // ========== CREATE ==========
 exports.createHotel = async (req, res) => {
   try {
+    console.log('📥 Create request received');
+    console.log('File object:', req.file);
+
     const { title, description, latitude, longitude, price } = req.body;
 
     if (!req.file) {
+      console.log('❌ No file uploaded');
       return res.status(400).json({ message: 'Image is required' });
     }
 
-    // Cloudinary URL (req.file.path la irukkum)
-    const image = req.file.path;
+    // ✅ Cloudinary la irundhu URL edukkanum
+    const image = req.file.path || req.file.secure_url || req.file.url;
+    console.log('✅ Cloudinary URL:', image);
 
     const result = await db.query(
       `INSERT INTO hotels 
@@ -47,9 +50,11 @@ exports.createHotel = async (req, res) => {
       [image, title, description, latitude, longitude, price]
     );
 
+    console.log('✅ Inserted hotel ID:', result.rows[0].id);
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error('Create error:', err.message);
+    console.error('❌ Create error:', err.message);
+    console.error('❌ Full error:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -67,10 +72,9 @@ exports.updateHotel = async (req, res) => {
 
     let image = check.rows[0].image;
 
-    // New image upload aana, old image ah Cloudinary la irundhu delete pannunga
     if (req.file) {
       await deleteFromCloudinary(image);
-      image = req.file.path;
+      image = req.file.path || req.file.secure_url || req.file.url;
     }
 
     const result = await db.query(
@@ -85,7 +89,7 @@ exports.updateHotel = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error('Update error:', err.message);
+    console.error('❌ Update error:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -100,14 +104,12 @@ exports.deleteHotel = async (req, res) => {
       return res.status(404).json({ message: 'Hotel not found' });
     }
 
-    // Cloudinary la irundhu image delete pannunga
     await deleteFromCloudinary(check.rows[0].image);
-
     await db.query('DELETE FROM hotels WHERE id = $1', [id]);
 
     res.json({ message: 'Hotel deleted successfully' });
   } catch (err) {
-    console.error('Delete error:', err.message);
+    console.error('❌ Delete error:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -143,7 +145,7 @@ exports.getHotels = async (req, res) => {
       limit,
     });
   } catch (err) {
-    console.error('Fetch error:', err.message);
+    console.error('❌ Fetch error:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -151,9 +153,7 @@ exports.getHotels = async (req, res) => {
 // ========== GET BY ID ==========
 exports.getHotelById = async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM hotels WHERE id = $1', [
-      req.params.id,
-    ]);
+    const result = await db.query('SELECT * FROM hotels WHERE id = $1', [req.params.id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Hotel not found' });
@@ -161,7 +161,7 @@ exports.getHotelById = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error('Get by id error:', err.message);
+    console.error('❌ Get error:', err.message);
     res.status(500).json({ message: err.message });
   }
 };
