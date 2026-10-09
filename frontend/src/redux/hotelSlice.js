@@ -13,28 +13,43 @@ export const fetchHotelById = createAsyncThunk('hotels/fetchOne', async (id) => 
   return data;
 });
 
-export const createHotel = createAsyncThunk('hotels/create', async (formData, { rejectWithValue }) => {
-  try {
-    const { data } = await axios.post(API, formData);
-    return data;
-  } catch (err) {
-    return rejectWithValue(
-      err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || err.message
-    );
+export const createHotel = createAsyncThunk(
+  'hotels/create',
+  async (formData, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.post(API, formData, {
+        timeout: 120000,  
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message ||
+          err.response?.data?.errors?.[0]?.msg ||
+          err.message
+      );
+    }
   }
-});
+);
 
-export const updateHotel = createAsyncThunk('hotels/update', async ({ id, formData }, { rejectWithValue }) => {
-  try {
-    const { data } = await axios.put(`${API}/${id}`, formData);
-    return data;
-  } catch (err) {
-    return rejectWithValue(
-      err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || err.message
-    );
+export const updateHotel = createAsyncThunk(
+  'hotels/update',
+  async ({ id, formData }, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.put(`${API}/${id}`, formData, {
+        timeout: 120000, 
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message ||
+          err.response?.data?.errors?.[0]?.msg ||
+          err.message
+      );
+    }
   }
-});
-
+);
 export const deleteHotel = createAsyncThunk('hotels/delete', async (id) => {
   await axios.delete(`${API}/${id}`);
   return id;

@@ -20,7 +20,6 @@ const storage = new CloudinaryStorage({
   },
 });
 
-// File filter
 const fileFilter = (req, file, cb) => {
   const allowed = /jpeg|jpg|png|webp/;
   const isAllowed = allowed.test(file.mimetype);
@@ -31,5 +30,5 @@ const fileFilter = (req, file, cb) => {
 module.exports = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 10 * 1024 * 1024 }, 
 });
