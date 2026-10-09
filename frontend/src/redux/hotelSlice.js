@@ -1,25 +1,34 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api/hotels';
+// ✅ Environment variable use pannunga
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/hotels';
 
-export const fetchHotels = createAsyncThunk('hotels/fetch', async (params) => {
-  const { data } = await axios.get(API, { params });
-  return data;
+export const fetchHotels = createAsyncThunk('hotels/fetch', async (params, { rejectWithValue }) => {
+  try {
+    const { data } = await axios.get(API, { params });
+    return data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || err.message);
+  }
 });
 
-export const fetchHotelById = createAsyncThunk('hotels/fetchOne', async (id) => {
-  const { data } = await axios.get(`${API}/${id}`);
-  return data;
+export const fetchHotelById = createAsyncThunk('hotels/fetchOne', async (id, { rejectWithValue }) => {
+  try {
+    const { data } = await axios.get(`${API}/${id}`);
+    return data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || err.message);
+  }
 });
 
 export const createHotel = createAsyncThunk(
   'hotels/create',
   async (formData, { rejectWithValue }) => {
     try {
+      // ✅ Headers illa! Axios automatic ah boundary set pannum
       const { data } = await axios.post(API, formData, {
-        timeout: 120000,  
-        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120000,
       });
       return data;
     } catch (err) {
@@ -36,9 +45,9 @@ export const updateHotel = createAsyncThunk(
   'hotels/update',
   async ({ id, formData }, { rejectWithValue }) => {
     try {
+      // ✅ Headers illa!
       const { data } = await axios.put(`${API}/${id}`, formData, {
-        timeout: 120000, 
-        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120000,
       });
       return data;
     } catch (err) {
@@ -50,20 +59,30 @@ export const updateHotel = createAsyncThunk(
     }
   }
 );
-export const deleteHotel = createAsyncThunk('hotels/delete', async (id) => {
-  await axios.delete(`${API}/${id}`);
-  return id;
+
+export const deleteHotel = createAsyncThunk('hotels/delete', async (id, { rejectWithValue }) => {
+  try {
+    await axios.delete(`${API}/${id}`);
+    return id;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || err.message);
+  }
 });
 
 const hotelSlice = createSlice({
   name: 'hotels',
   initialState: {
-    list: [], total: 0, page: 1, limit: 6,
-    current: null, loading: false, error: null,
+    list: [],
+    total: 0,
+    page: 1,
+    limit: 6,
+    current: null,
+    loading: false,
+    error: null,
   },
   reducers: {},
-  extraReducers: (b) => {
-    b
+  extraReducers: (builder) => {
+    builder
       .addCase(fetchHotels.pending, (s) => { s.loading = true; })
       .addCase(fetchHotels.fulfilled, (s, a) => {
         s.loading = false;
@@ -72,8 +91,13 @@ const hotelSlice = createSlice({
         s.page = a.payload.page;
         s.limit = a.payload.limit;
       })
-      .addCase(fetchHotels.rejected, (s, a) => { s.loading = false; s.error = a.error.message; })
-      .addCase(fetchHotelById.fulfilled, (s, a) => { s.current = a.payload; })
+      .addCase(fetchHotels.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
+      })
+      .addCase(fetchHotelById.fulfilled, (s, a) => {
+        s.current = a.payload;
+      })
       .addCase(deleteHotel.fulfilled, (s, a) => {
         s.list = s.list.filter((h) => h.id !== a.payload);
       });
