@@ -15,16 +15,16 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'hotel-app',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp','avif','gif'],
     transformation: [{ width: 1200, height: 800, crop: 'limit' }],
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowed = /jpeg|jpg|png|webp/;
+  const allowed = /jpg|jpeg|png|webp|avif|gif/;
   const isAllowed = allowed.test(file.mimetype);
   if (isAllowed) cb(null, true);
-  else cb(new Error('Only images allowed (jpeg, jpg, png, webp)'));
+  else cb(new Error('Only images allowed (jpeg, jpg, png, webp,avif,gif)'));
 };
 
 module.exports = multer({
