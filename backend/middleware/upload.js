@@ -10,18 +10,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Storage config
+
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'hotel-app',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp','avif','gif'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     transformation: [{ width: 1200, height: 800, crop: 'limit' }],
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowed = /jpg|jpeg|png|webp|avif|gif/;
+  const allowed = /jpg|jpeg|png|webp/;
   const isAllowed = allowed.test(file.mimetype);
   if (isAllowed) cb(null, true);
   else cb(new Error('Only images allowed (jpeg, jpg, png, webp,avif,gif)'));
@@ -30,5 +30,5 @@ const fileFilter = (req, file, cb) => {
 module.exports = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, 
+  limits: { fileSize: 20 * 1024 * 1024 }, 
 });
